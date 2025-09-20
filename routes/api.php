@@ -6,13 +6,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
-Route::middleware('guest')->group(function () {
+Route::middleware('guest')->prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
     Route::post('send-otp', [AuthController::class, 'sendOtp']);
     Route::post('otp-login', [AuthController::class, 'otpLogin']);
-    Route::post('facebook', [SocialMediaAuthController::class, 'facebookAuth']);
-    Route::post('google', [SocialMediaAuthController::class, 'googleAuth']);
+    Route::get('{provider}/redirect', [SocialMediaAuthController::class, 'redirect']);
+    Route::get('{provider}/callback', [SocialMediaAuthController::class, 'callback']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

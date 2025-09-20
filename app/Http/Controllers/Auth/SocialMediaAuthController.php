@@ -16,11 +16,14 @@ class SocialMediaAuthController extends Controller
         $this->socialMediaAuthService = $socialMediaAuthService;
     }
 
-    public function facebook(Request $request)
+    public function redirect(string $provider)
     {
+        return $this->socialMediaAuthService->redirect($provider);
     }
 
-    public function google(Request $request)
+    public function callback(string $provider)
     {
+        return $this->socialMediaAuthService->callback($provider);
     }
+
 }
