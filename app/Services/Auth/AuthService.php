@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthService
@@ -20,7 +21,7 @@ class AuthService
             $token = $user->createToken('auth_token')->plainTextToken;
             return [
                 'access_token' => $token,
-                'user' => $user,
+                'user' => $user->load('media'),
             ];
         }
         return null;
@@ -50,7 +51,7 @@ class AuthService
 
         return [
             'access_token' => $token,
-            'user' => $user,
+            'user' => $user->load('media'),
         ];
     }
 
@@ -77,9 +78,16 @@ class AuthService
             "email" => $data['email'],
             "phone" => $data['phone'],
             "password" => bcrypt($data['password']),
-            "is_teacher" => $data['is_teacher'],
-            "image" => isset($data['image']) ? $data['image']->store('profile-images', 'public') : null,
         ]);
+
+        if (isset($data['image'])) {
+
+            $path = Storage::disk('public')->put('avatar', $data['image']);
+            $user->media()->create([
+                'url' => Storage::url($path),
+                'type' => pathinfo($path, PATHINFO_EXTENSION),
+            ]);
+        }
 
         if ($data['is_teacher'] == true) {
 

@@ -67,7 +67,7 @@ class SocialMediaAuthService
 
         return response()->json([
             'access_token' => $token,
-            'user' => $user,
+            'user' => $user->load('media'),
         ]);
     }
 
