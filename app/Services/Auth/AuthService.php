@@ -4,8 +4,10 @@ namespace App\Services\Auth;
 
 use App\Enums\Role;
 use App\Mail\OtpLoginEmail;
+use App\Mail\VerifyEmailUsingCode;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
@@ -41,7 +43,7 @@ class AuthService
             return response()->json(['message' => 'OTP expired'], Response::HTTP_UNAUTHORIZED);
         }
 
-        if ($cachedOtp !== $data['otp']) {
+        if ($cachedOtp !== (int) $data['otp']) {
             return response()->json(['message' => 'Invalid OTP'], Response::HTTP_UNAUTHORIZED);
         }
 
@@ -60,8 +62,6 @@ class AuthService
         $user = User::where('email', $data['email'])->first();
         if ($user) {
             $otp = rand(100000, 999999);
-            $user->otp = $otp;
-            $user->save();
             Cache::put("otp_{$user->id}", $otp, now()->addMinutes(10));
 
             Mail::to($user->email)->send(new OtpLoginEmail($user->name, $otp));
@@ -117,8 +117,37 @@ class AuthService
             $team->users()->attach($user->id, ['role' => $role->value]);
 
         }
+        $verificationCode = rand(100000, 999999);
+        $user->verification_code = $verificationCode;
+        $user->save();
+
+        Mail::to($user->email)->send(new VerifyEmailUsingCode($user->name, $verificationCode));
 
         return $user;
+
+    }
+
+    public function verifyEmail(array $data)
+    {
+        $user = auth()->user();
+
+        if ($user->email_verified_at) {
+            return response()->json(['message' => 'Email already verified'], Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($user->verification_code !== $data['code']) {
+            return response()->json(['message' => 'Invalid verification code'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        if ($user->verification_code === $data['code']) {
+            $user->email_verified_at = now();
+            $user->verification_code = null;
+            $user->save();
+
+            return response()->json(['message' => 'Email verified successfully'], Response::HTTP_OK);
+        }
+
+        return response()->json(['message' => 'Email verification failed'], Response::HTTP_UNAUTHORIZED);
 
     }
 

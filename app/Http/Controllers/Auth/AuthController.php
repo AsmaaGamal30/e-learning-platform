@@ -40,6 +40,14 @@ class AuthController extends Controller
         return $this->authService->sendOtp($request->only('email'));
     }
 
+    public function verifyEmail(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|size:6',
+        ]);
+        return $this->authService->verifyEmail($request->only('code'));
+    }
+
     public function logout(Request $request)
     {
         return $this->authService->logout($request);

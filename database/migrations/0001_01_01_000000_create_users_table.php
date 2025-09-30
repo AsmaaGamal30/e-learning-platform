@@ -21,7 +21,7 @@ return new class extends Migration {
             $table->string('auth_provider_id')->nullable();
             $table->text('auth_provider_token')->nullable();
             $table->text('auth_provider_refresh_token')->nullable();
-
+            $table->string('verification_code')->nullable();
             $table->rememberToken();
             $table->foreignId('current_team_id')->nullable();
             $table->timestamps();
