@@ -19,9 +19,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('email/verify', [AuthController::class, 'verifyEmail'])->name('api.email.verify');
     Route::post('logout', [AuthController::class, 'logout'])->name('api.logout');
 
-    Route::middleware([HasRoleMiddleware::class, 'verified'])->group(function () {
-        //update profile
-        //choose role and create team if not exists
+      Route::middleware([HasRoleMiddleware::class, 'verified'])->group(function () {
+
     });
 
 });
