@@ -40,7 +40,7 @@ class LoginTest extends TestCase
     public function user_can_login_with_otp()
     {
 
-        $otp = rand(100000, 999999);
+        $otp = random_int(100000, 999999);
         Cache::put("otp_{$this->user->id}", $otp, now()->addMinutes(10));
 
         $response = $this->postJson(route('otpLogin'), [
