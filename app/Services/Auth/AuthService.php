@@ -3,6 +3,8 @@
 namespace App\Services\Auth;
 
 use App\Enums\Role;
+use App\Events\OtpLogin;
+use App\Events\Registered;
 use App\Mail\OtpLoginEmail;
 use App\Mail\VerifyEmailUsingCode;
 use App\Models\Team;
@@ -61,10 +63,16 @@ class AuthService
     {
         $user = User::where('email', $data['email'])->first();
         if ($user) {
+            $cachedOtp = Cache::get("otp_{$user->id}");
+
+            if ($cachedOtp) {
+                Cache::forget("otp_{$user->id}");
+            }
+
             $otp = rand(100000, 999999);
             Cache::put("otp_{$user->id}", $otp, now()->addMinutes(10));
 
-            Mail::to($user->email)->send(new OtpLoginEmail($user->name, $otp));
+            event(new OtpLogin($user, $otp));
 
             return true;
         }
@@ -117,14 +125,26 @@ class AuthService
             $team->users()->attach($user->id, ['role' => $role->value]);
 
         }
-        $verificationCode = rand(100000, 999999);
-        $user->verification_code = $verificationCode;
-        $user->save();
 
-        Mail::to($user->email)->send(new VerifyEmailUsingCode($user->name, $verificationCode));
+        event(new Registered($user));
 
         return $user;
 
+    }
+
+    public function resendVerificationEmail(User $user)
+    {
+
+        if ($user->email_verified_at) {
+            return response()->json(['message' => 'Email already verified'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user->verification_code = rand(100000, 999999);
+        $user->save();
+
+        event(new Registered($user));
+
+        return response()->json(['message' => 'Verification email resent'], Response::HTTP_OK);
     }
 
     public function verifyEmail(array $data)

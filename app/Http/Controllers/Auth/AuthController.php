@@ -48,6 +48,11 @@ class AuthController extends Controller
         return $this->authService->verifyEmail($request->only('code'));
     }
 
+    public function resendVerificationEmail(User $user)
+    {
+        return $this->authService->resendVerificationEmail($user);
+    }
+
     public function logout(Request $request)
     {
         return $this->authService->logout($request);

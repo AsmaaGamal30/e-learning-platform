@@ -28,7 +28,7 @@ class LoginTest extends TestCase
     #[Test]
     public function user_can_login_with_email_and_password()
     {
-        $response = $this->postJson(route('api.login'), [
+        $response = $this->postJson(route('login'), [
             'email' => "user@example.com",
             'password' => 'password',
         ]);
@@ -43,7 +43,7 @@ class LoginTest extends TestCase
         $otp = rand(100000, 999999);
         Cache::put("otp_{$this->user->id}", $otp, now()->addMinutes(10));
 
-        $response = $this->postJson(route('api.otpLogin'), [
+        $response = $this->postJson(route('otpLogin'), [
             'email' => "user@example.com",
             'otp' => (string) $otp,
         ]);
