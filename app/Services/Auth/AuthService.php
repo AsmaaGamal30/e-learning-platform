@@ -69,7 +69,7 @@ class AuthService
                 Cache::forget("otp_{$user->id}");
             }
 
-            $otp = rand(100000, 999999);
+            $otp = random_int(100000, 999999);
             Cache::put("otp_{$user->id}", $otp, now()->addMinutes(10));
 
             event(new OtpLogin($user, $otp));
@@ -139,7 +139,7 @@ class AuthService
             return response()->json(['message' => 'Email already verified'], Response::HTTP_BAD_REQUEST);
         }
 
-        $user->verification_code = rand(100000, 999999);
+        $user->verification_code = random_int(100000, 999999);
         $user->save();
 
         event(new Registered($user));

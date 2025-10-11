@@ -28,7 +28,7 @@ class SendVerifyEmail
 
     protected function generateVerificationCode($user): string
     {
-        $verificationCode = rand(100000, 999999);
+        $verificationCode = random_int(100000, 999999);
         $user->verification_code = $verificationCode;
         $user->save();
 
